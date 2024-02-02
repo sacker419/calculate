@@ -8,7 +8,7 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/tvIntput"
+        android:id="@+id/Input"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
@@ -18,7 +18,7 @@
         android:gravity="end|bottom"/>
 
     <TextView
-        android:id="@+id/tvResult"
+        android:id="@+id/Result"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -48,12 +48,12 @@
             android:textSize="10dp" />
 
         <Button
-            android:id="@+id/btnBack"
+            android:id="@+id/btnDelete"
             android:layout_width="70dp"
             android:layout_height="80dp"
             android:layout_column="3"
             android:layout_margin="5dp"
-            android:onClick="backClick"
+            android:onClick="DeleteClick"
             android:text="⬅"
             android:textSize="16dp"/>
 
