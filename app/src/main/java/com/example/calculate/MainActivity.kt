@@ -3,14 +3,20 @@ package com.example.calculate
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.renderscript.ScriptGroup
+import android.text.method.ScrollingMovementMethod
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import com.example.calculate.databinding.ActivityMainBinding
 import kotlin.math.round
 import android.widget.Toast
+import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
+
+    var inputDisplayArray = Array<String>(0, { "" })
+    var stack = Stack<String>() // stack = []
 
     private lateinit var binding: ActivityMainBinding
 
@@ -26,8 +32,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.Input.text = " "
-        binding.Result.text = " "
+        binding.Input.movementMethod = ScrollingMovementMethod.getInstance()
+        binding.Input.post {
+            val scrollAmount = binding.Input.layout.getLineTop(binding.Input.lineCount) - binding.Input.height
+            if (scrollAmount > 0)
+                binding.Input.scrollTo(0, scrollAmount)
+            else
+                binding.Input.scrollTo(0,0)
+        }
+        binding.Input.text = ""
+        binding.Result.text = ""
 
         binding.btnDevide.setOnClickListener {
             operClick("÷")
@@ -77,35 +91,35 @@ class MainActivity : AppCompatActivity() {
             dotClick(".")
         }
 
+        binding.btnAC.setOnClickListener {
+            acClick()
+        }
+        binding.btnDelete.setOnClickListener {
+            deleteClick()
+        }
     }
     fun numClick(num: Int){
-        when (num) {
-            1 -> binding.Input.text = "1"
-            2 -> binding.Input.text = "2"
-            3 -> binding.Input.text = "3"
-            4 -> binding.Input.text = "4"
-            5 -> binding.Input.text = "5"
-            6 -> binding.Input.text = "6"
-            7 -> binding.Input.text = "7"
-            8 -> binding.Input.text = "8"
-            9 -> binding.Input.text = "9"
-            0 -> binding.Input.text = "0"
+        if(inputDisplayArray.size < 11) {
+            binding.Input.text = binding.Input.text.toString() + num.toString()
+//                inputDisplayArray += num.toString()
+        } else {
+            binding.Input.textSize = 45f
+            binding.Input.text = binding.Input.text.toString() + num.toString()
         }
+        inputDisplayArray = inputDisplayArray.plus(num.toString())
+        var test = inputDisplayArray.size.toString()
+        showToast(test)
     }
 
     fun operClick(oper: String){
-        when (oper) {
-            "÷" -> binding.Input.text = "÷"
-            "x" -> binding.Input.text = "x"
-            "-" -> binding.Input.text = "-"
-            "+" -> binding.Input.text = "+"
-        }
+        inputDisplayArray = inputDisplayArray.plus(oper)
+        binding.Input.text = binding.Input.text.toString() + oper
+        stack.push(oper)
     }
 
     fun dotClick(dot: String){
-        when (dot) {
-            "." -> binding.Input.text ="."
-        }
+        inputDisplayArray = inputDisplayArray.plus(dot)
+        binding.Input.text = binding.Input.text.toString() + dot
     }
 
     fun equalClick(equal: String){
@@ -115,16 +129,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun deleteClick(){
-
+        inputDisplayArray = inputDisplayArray.dropLast(1).toTypedArray()
+//        binding.Input.text = inputDisplayArray.
     }
 
     fun acClick(){
-        result?.text = ""
-        input?.text = ""
-        firstNum = 0.0
-        secondNum = 0.0
-        Oper = ""
-        resultNum = 0.0
+        inputDisplayArray = Array<String>(0, { "" })
+        binding.Input.text = " "
     }
 
     private fun showToast(message: String) {
