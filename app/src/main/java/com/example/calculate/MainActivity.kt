@@ -15,17 +15,10 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    var inputDisplayArray = Array<String>(0, { "" })
+    var inputDisplayArray = List<Any>(0) {}
     var stack = Stack<String>() // stack = []
 
     private lateinit var binding: ActivityMainBinding
-
-    private var result : TextView? = null
-    private var input : TextView? = null
-    private var firstNum : Double = 0.0
-    private var secondNum : Double = 0.0
-    private var resultNum : Double = 0.0
-    private var Oper : String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,10 +28,12 @@ class MainActivity : AppCompatActivity() {
         binding.Input.movementMethod = ScrollingMovementMethod.getInstance()
         binding.Input.post {
             val scrollAmount = binding.Input.layout.getLineTop(binding.Input.lineCount) - binding.Input.height
-            if (scrollAmount > 0)
+            if (scrollAmount > 0) {
                 binding.Input.scrollTo(0, scrollAmount)
-            else
-                binding.Input.scrollTo(0,0)
+            }
+            else {
+                binding.Input.scrollTo(0, 0)
+            }
         }
         binding.Input.text = ""
         binding.Result.text = ""
@@ -54,6 +49,9 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnPLus.setOnClickListener {
             operClick("+")
+        }
+        binding.btnDot.setOnClickListener {
+            operClick(".")
         }
 
         binding.btnNum1.setOnClickListener {
@@ -87,10 +85,6 @@ class MainActivity : AppCompatActivity() {
             numClick(0)
         }
 
-        binding.btnDot.setOnClickListener {
-            dotClick(".")
-        }
-
         binding.btnAC.setOnClickListener {
             acClick()
         }
@@ -99,27 +93,54 @@ class MainActivity : AppCompatActivity() {
         }
     }
     fun numClick(num: Int){
+        var lastElement = inputDisplayArray.lastOrNull()
         if(inputDisplayArray.size < 11) {
-            binding.Input.text = binding.Input.text.toString() + num.toString()
+            binding.Input.textSize = 60f
+            if (lastElement != null) {
+                inputDisplayArray = inputDisplayArray.plus(num)
+                binding.Input.text = binding.Input.text.toString() + num
+            } else if (inputDisplayArray.size > 2) {
+                if (inputDisplayArray[0] == 0) {
+                    inputDisplayArray = inputDisplayArray.drop(1)
+                    binding.Input.text = binding.Input.text.drop(1)
+                    binding.Input.text = inputDisplayArray.joinToString("")
+                }
+            } else {
+//                inputDisplayArray = inputDisplayArray.dropLast(1)
+                inputDisplayArray = inputDisplayArray.plus(num)
+                binding.Input.text = inputDisplayArray.joinToString("")
+            }
 //                inputDisplayArray += num.toString()
         } else {
             binding.Input.textSize = 45f
-            binding.Input.text = binding.Input.text.toString() + num.toString()
+            inputDisplayArray = inputDisplayArray.plus(num)
+            binding.Input.text = binding.Input.text.toString() + num
         }
-        inputDisplayArray = inputDisplayArray.plus(num.toString())
-        var test = inputDisplayArray.size.toString()
-        showToast(test)
+//        var test = inputDisplayArray.size.toString()
+//        showToast(test)
     }
 
     fun operClick(oper: String){
-        inputDisplayArray = inputDisplayArray.plus(oper)
-        binding.Input.text = binding.Input.text.toString() + oper
-        stack.push(oper)
-    }
-
-    fun dotClick(dot: String){
-        inputDisplayArray = inputDisplayArray.plus(dot)
-        binding.Input.text = binding.Input.text.toString() + dot
+        var lastElement = inputDisplayArray.lastOrNull()
+        if (lastElement != null) {
+            if (lastElement is String) {
+                inputDisplayArray = inputDisplayArray.dropLast(1)
+                inputDisplayArray = inputDisplayArray.plus(oper)
+                binding.Input.text = inputDisplayArray.joinToString("")
+//                showToast(inputDisplayArray.size.toString())
+            } else if (lastElement is Int) {
+                binding.Input.text = binding.Input.text.toString() + oper
+                inputDisplayArray = inputDisplayArray.plus(oper)
+//                showToast(inputDisplayArray.size.toString())
+                stack.push(oper)
+            } else {
+                showToast("error")
+            }
+        } else {
+            inputDisplayArray = inputDisplayArray.plus(0).plus(oper)
+            binding.Input.text = inputDisplayArray.joinToString("")
+//            showToast(inputDisplayArray.size.toString())
+        }
     }
 
     fun equalClick(equal: String){
@@ -129,13 +150,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun deleteClick(){
-        inputDisplayArray = inputDisplayArray.dropLast(1).toTypedArray()
-//        binding.Input.text = inputDisplayArray.
+        var lastElement = inputDisplayArray.lastOrNull()
+        if (lastElement != null) {
+            inputDisplayArray = inputDisplayArray.dropLast(1)
+            binding.Input.text = inputDisplayArray.joinToString("")
+        }
     }
 
     fun acClick(){
-        inputDisplayArray = Array<String>(0, { "" })
-        binding.Input.text = " "
+        binding.Input.textSize = 60f
+        inputDisplayArray = List<Any>(0) {}
+        binding.Input.text = ""
     }
 
     private fun showToast(message: String) {

@@ -16,7 +16,10 @@
         android:padding="10dp"
         android:textSize="60sp"
         android:scrollbars="vertical"
-        android:gravity="end|bottom"/>
+        android:hint="0"
+        android:textColorHint="@color/lightgray"
+        android:textColor="@color/lightgray"
+        android:gravity="end|top"/>
 
     <TextView
         android:id="@+id/Result"
@@ -27,7 +30,6 @@
         android:textSize="60dp"
         android:textStyle="bold"
         android:textColor="@color/white"
-        android:hint="0"
         android:gravity="end|bottom"/>
 
     <GridLayout
