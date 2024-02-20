@@ -16,7 +16,6 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     var inputDisplayList = List<Any>(0) {}
-    var stack = Stack<String>() // stack = []
 
     private lateinit var binding: ActivityMainBinding
 
@@ -52,6 +51,17 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnDot.setOnClickListener {
             operClick(".")
+        }
+
+        binding.btnEqual.setOnClickListener {
+            equalClick()
+        }
+
+        binding.btnBracketOpen.setOnClickListener {
+            bracketClick("(")
+        }
+        binding.btnBracketClose.setOnClickListener {
+            bracketClick(")")
         }
 
         binding.btnNum1.setOnClickListener {
@@ -92,8 +102,115 @@ class MainActivity : AppCompatActivity() {
             deleteClick()
         }
     }
+
+    //후위 표기법으로 변환
+    fun infixToPostfix(expression: String): String {
+        val precedence = mapOf('+' to 1, '-' to 1, 'x' to 2, '÷' to 2)
+        val output = StringBuilder()
+        val stack = Stack<Char>()
+
+        var prevChar: Char? = null // 이전 문자를 추적하기 위한 변수
+
+        for (char in expression) {
+            when {
+                char.isDigit() || char == '.' -> {
+                    if (prevChar != null && (prevChar.isDigit() || prevChar == '.')) {
+                        // 이전 문자가 숫자나 소수점이면 공백 추가하지 않음
+                        output.append(char)
+                    } else {
+                        // 이전 문자가 연산자거나 null이면 공백을 추가한 후 문자 추가
+                        output.append(" ").append(char)
+                    }
+                }
+                char in precedence -> {
+                    while (stack.isNotEmpty() && stack.peek() in precedence && precedence[stack.peek()]!! >= precedence[char]!!) {
+                        output.append(" ").append(stack.pop())
+                    }
+                    stack.push(char)
+                }
+                char == '(' -> stack.push(char)
+                char == ')' -> {
+                    while (stack.isNotEmpty() && stack.peek() != '(') {
+                        output.append(" ").append(stack.pop())
+                    }
+                    stack.pop()
+                }
+            }
+            prevChar = char // 이전 문자 업데이트
+        }
+
+        while (stack.isNotEmpty()) {
+            output.append(" ").append(stack.pop())
+        }
+
+        return output.toString().trim() // 결과 문자열 양쪽의 공백 제거
+    }
+
+    fun calcPostfix(postfixExpression: String): String {
+        val stack = Stack<Double>()
+
+        for (char in postfixExpression.split(" ")) {
+            when {
+                char.isNumeric() -> stack.push(char.toDouble())
+                char in listOf("+", "-", "x", "÷") -> {
+                    val operand2 = stack.pop()
+                    val operand1 = stack.pop()
+                    val result = when (char) {
+                        "+" -> operand1 + operand2
+                        "-" -> operand1 - operand2
+                        "x" -> operand1 * operand2
+                        "÷" -> operand1 / operand2
+                        else -> throw IllegalArgumentException("Invalid operator")
+                    }
+                    stack.push(result)
+                }
+            }
+        }
+
+        var result = stack.pop().toString()
+
+        // 소수인 경우
+        if (result.contains('.')) {
+            val decimalParts = result.split(".")
+            val integerPart = decimalParts[0]
+            var decimalPart = decimalParts.getOrElse(1) { "" }
+
+            if (result.toDouble() >= 1E7) {
+                result = result.toDouble().toLong().toString() // 지수 형식이 아닌 정수로 변환
+            } else {
+                // 소수점 이하 자릿수 제한
+                if (decimalPart.length > 12) {
+                    decimalPart = decimalPart.substring(0, 12)
+                }
+                result = "$integerPart.$decimalPart"
+                // 소수점 이하 0 제거
+                result = result.trimEnd('0').trimEnd('.')
+            }
+        }
+
+        // 천 단위마다 쉼표 추가
+        val parts = result.split(".")
+        val integerPart = parts[0].reversed().chunked(3).joinToString(",").reversed()
+        result = if (parts.size > 1) "$integerPart.${parts[1]}" else integerPart
+
+        return result
+    }
+
+    fun String.isNumeric(): Boolean {
+        return try {
+            this.toDouble()
+            true
+        } catch (e: NumberFormatException) {
+            false
+        }
+    }
+
     fun numClick(num: Int){
-        var lastElement = inputDisplayList.lastOrNull()
+        val lastElement = inputDisplayList.lastOrNull()
+        when {
+            inputDisplayList != null -> binding.Result.text = ""
+        }
+
         if(inputDisplayList.size < 11) {
             binding.Input.textSize = 60f
             if (lastElement == null) {
@@ -121,7 +238,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun operClick(oper: String){
-        var lastElement = inputDisplayList.lastOrNull()
+        val lastElement = inputDisplayList.lastOrNull()
+        when {
+            inputDisplayList != null -> binding.Result.text = ""
+        }
         if (lastElement != null) {
             if (lastElement is String) {
                 inputDisplayList = inputDisplayList.dropLast(1)
@@ -129,17 +249,10 @@ class MainActivity : AppCompatActivity() {
                 binding.Input.text = inputDisplayList.joinToString("")
 //                showToast(inputDisplayList.size.toString())
 
-                if (oper == ".") {
-
-                }
-
-
-
             } else if (lastElement is Int) {
                 binding.Input.text = binding.Input.text.toString() + oper
                 inputDisplayList = inputDisplayList.plus(oper)
 //                showToast(inputDisplayList.size.toString())
-                stack.push(oper)
             } else {
                 showToast("error")
             }
@@ -150,17 +263,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun equalClick(equal: String){
-        when (equal) {
+    fun bracketClick(bracket: String){
 
-        }
+    }
+
+    fun equalClick(){
+        val postfix = infixToPostfix(inputDisplayList.joinToString(""))
+        val result = calcPostfix(postfix)
+
+        binding.Result.text = result
     }
 
     fun deleteClick(){
-        var lastElement = inputDisplayList.lastOrNull()
+        val lastElement = inputDisplayList.lastOrNull()
         if (lastElement != null) {
             inputDisplayList = inputDisplayList.dropLast(1)
             binding.Input.text = inputDisplayList.joinToString("")
+            binding.Result.text = ""
         }
     }
 
@@ -176,5 +295,4 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
         }
     }
-
 }

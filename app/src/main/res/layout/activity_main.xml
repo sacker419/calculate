@@ -80,27 +80,27 @@
             android:textSize="25sp"/>
 
         <Button
-            android:id="@+id/btnBracket"
+            android:id="@+id/btnBracketOpen"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="5dp"
             android:layout_columnWeight="1"
             android:layout_rowWeight="1"
-            android:onClick="bracket"
+            android:onClick="bracketOpen"
             android:background="@drawable/shape_circle_button_lightgray"
-            android:text="()"
+            android:text="("
             android:textSize="25sp"/>
 
         <Button
-            android:id="@+id/btnPercent"
+            android:id="@+id/btnBracketClose"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="5dp"
             android:layout_columnWeight="1"
             android:layout_rowWeight="1"
-            android:onClick="percent"
+            android:onClick="bracketClose"
             android:background="@drawable/shape_circle_button_lightgray"
-            android:text="%"
+            android:text=")"
             android:textSize="25sp"/>
 
         <Button
